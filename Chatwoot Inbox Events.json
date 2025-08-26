@@ -1,0 +1,533 @@
+{
+  "name": "Chatwoot Inbox Events",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "41cb2b96-c1a5-461b-a1d1-de3ad5c49f36",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        0
+      ],
+      "id": "45602af3-f0aa-46eb-8cb2-2b592b34f2fa",
+      "name": "Webhook",
+      "webhookId": "41cb2b96-c1a5-461b-a1d1-de3ad5c49f36"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5fb179ab-d3e9-410f-a4cd-24a15e2ac1a0",
+              "leftValue": "={{ $('Webhook').item.json.body.conversation.messages[0].source_id }}",
+              "rightValue": "whatsapp-web",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "b29def2f-d4a7-416a-a4a4-f021814cc2fe",
+              "leftValue": "={{ $('Webhook').item.json.body.event }}",
+              "rightValue": "message_created",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "dd7678eb-450f-4248-914e-d4efddbb5f63",
+      "name": "not from whatsapp web?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d06d604b-e34c-45b3-9b45-fc52e46b6099",
+              "leftValue": "={{ $('Webhook').item.json.body.conversation.messages[0].attachments.isNotEmpty() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        -112
+      ],
+      "id": "583538e8-3c8c-40ab-ac0b-de90c5f3c08a",
+      "name": "has file?"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.conversation.messages[0].attachments[0].file_type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "af95b51d-219a-454c-8027-7af8bdbde689"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ba7d869e-e2e0-48f6-9da2-39458c9f66ac",
+                    "leftValue": "={{ $('Webhook').item.json.body.conversation.messages[0].attachments[0].file_type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b640eab1-cdb6-4d63-bbed-af7e5053b5a7",
+                    "leftValue": "={{ $('Webhook').item.json.body.conversation.messages[0].attachments[0].file_type }}",
+                    "rightValue": "video",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "video"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "57bd7942-ec48-4113-bfe2-e6e18ed1bc19",
+                    "leftValue": "={{ $('Webhook').item.json.body.conversation.messages[0].attachments[0].file_type }}",
+                    "rightValue": "file",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "File"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1040,
+        -320
+      ],
+      "id": "92e651f1-4290-46f2-94f4-8672ec611b9d",
+      "name": "Filter file type"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.ultramsg.com/{{$('ultramsg data').first().json.instance_name}}/messages/voice",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{$('ultramsg data').first().json.token}}"
+            },
+            {
+              "name": "to",
+              "value": "={{$('ultramsg data').first().json.number_to_send}}"
+            },
+            {
+              "name": "audio",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].attachments[0].data_url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1392,
+        -544
+      ],
+      "id": "8543f284-7bee-4267-9136-d1a40d398c05",
+      "name": "Send audio"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.ultramsg.com/{{$('ultramsg data').first().json.instance_name}}/messages/image",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{$('ultramsg data').first().json.token}}"
+            },
+            {
+              "name": "to",
+              "value": "={{$('ultramsg data').first().json.number_to_send}}"
+            },
+            {
+              "name": "image",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].attachments[0].data_url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1392,
+        -384
+      ],
+      "id": "b8061015-12c1-4475-9212-2e7e569d2855",
+      "name": "Send image"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.ultramsg.com/{{$('ultramsg data').first().json.instance_name}}/messages/video",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{$('ultramsg data').first().json.token}}"
+            },
+            {
+              "name": "to",
+              "value": "={{$('ultramsg data').first().json.number_to_send}}"
+            },
+            {
+              "name": "video",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].attachments[0].data_url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1392,
+        -224
+      ],
+      "id": "fcfc1fdc-92d9-4ea0-918b-b4bff5ef2262",
+      "name": "Send video"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.ultramsg.com/{{$('ultramsg data').first().json.instance_name}}/messages/chat",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{$('ultramsg data').first().json.token}}"
+            },
+            {
+              "name": "to",
+              "value": "={{$('ultramsg data').first().json.number_to_send}}"
+            },
+            {
+              "name": "body",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1088,
+        96
+      ],
+      "id": "b76479c5-4da3-4fd1-be75-7111dfe50182",
+      "name": "Send text"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.ultramsg.com/{{$('ultramsg data').first().json.instance_name}}/messages/document",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{$('ultramsg data').first().json.token}}"
+            },
+            {
+              "name": "to",
+              "value": "={{$('ultramsg data').first().json.number_to_send}}"
+            },
+            {
+              "name": "filename",
+              "value": "=doc"
+            },
+            {
+              "name": "document",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].attachments[0].data_url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1392,
+        -48
+      ],
+      "id": "e2f1920b-c442-4093-9e0b-d87bf65040f1",
+      "name": "Send file"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b3e6f306-4eea-42fe-aa63-c9251f649016",
+              "name": "instance_name",
+              "value": "instance140364",
+              "type": "string"
+            },
+            {
+              "id": "23f42a2c-fcbf-435a-96ed-6282cd2bdbd7",
+              "name": "token",
+              "value": "ykmf7knsq2nwcup2",
+              "type": "string"
+            },
+            {
+              "id": "32e5305d-6e28-43bc-b085-6a939dd0402c",
+              "name": "number_to_send",
+              "value": "={{ $json.body.conversation.meta.sender.phone_number }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        0
+      ],
+      "id": "a523ceba-9acc-422a-a753-72223e17203f",
+      "name": "ultramsg data"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "ultramsg data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "not from whatsapp web?": {
+      "main": [
+        [
+          {
+            "node": "has file?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "has file?": {
+      "main": [
+        [
+          {
+            "node": "Filter file type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter file type": {
+      "main": [
+        [
+          {
+            "node": "Send audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ultramsg data": {
+      "main": [
+        [
+          {
+            "node": "not from whatsapp web?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "41d7a121-b7e5-42fb-a29a-e60d61e85f10",
+  "meta": {
+    "instanceId": "e90ea13b829bbed83cbf4787719624af4fdeea0feb562098b80751c67ed7fba9"
+  },
+  "id": "8koRSenhF7eyC16B",
+  "tags": [
+    {
+      "createdAt": "2025-08-24T15:48:51.178Z",
+      "updatedAt": "2025-08-24T15:48:51.178Z",
+      "id": "EaBnE1Yg0kogtMEx",
+      "name": "ultramsg"
+    }
+  ]
+}

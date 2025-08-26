@@ -1,0 +1,1323 @@
+{
+  "name": "ultramsg Events",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d91878e6-ef57-4930-b29d-1c8493f91c30",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1888,
+        800
+      ],
+      "id": "720dc3bd-1195-4b8a-ac55-7d37556eba68",
+      "name": "Webhook",
+      "webhookId": "d91878e6-ef57-4930-b29d-1c8493f91c30"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "89d88b49-0a4b-4260-a47d-9593643cbd6b",
+              "leftValue": "={{ $('Webhook').item.json.body.data.from }}",
+              "rightValue": "@c.us",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1264,
+        800
+      ],
+      "id": "e106f392-21e0-4347-99bc-529266f742f2",
+      "name": "Is not a Group?"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/contacts/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.phone_number }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -160,
+        1200
+      ],
+      "id": "915b2e55-4ad2-42dd-8d6f-5064af9674c2",
+      "name": "Get Contact1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bd0a00cd-dcad-436b-93bd-8e635c467e0a",
+              "leftValue": "={{ $json.meta.count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        1200
+      ],
+      "id": "dcd89856-191e-43ed-8132-f92fdbbebc4e",
+      "name": "Contact not exist?1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/contacts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $('Prev Data for Creating a Conversation1').item.json.name }}"
+            },
+            {
+              "name": "identifier",
+              "value": "={{ $('Prev Data for Creating a Conversation1').item.json.phone_number }}"
+            },
+            {
+              "name": "inbox_id",
+              "value": "={{ $('Prev Data for Creating a Conversation1').item.json.inbox_id }}"
+            },
+            {
+              "name": "phone_number",
+              "value": "=+{{ $('Prev Data for Creating a Conversation1').item.json.phone_number }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        1024
+      ],
+      "id": "1a6ae0c6-9b7a-42cb-942b-38bee81de710",
+      "name": "Create Contact1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/conversations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \n  \"inbox_id\": {{ $('Prev Data for Creating a Conversation1').item.json.inbox_id }},\n  \"contact_id\": {{$('Create Contact1').first().json.payload.contact.id}},\n  \"status\": \"open\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        512,
+        1024
+      ],
+      "id": "94e22732-660c-4a19-87b4-289a8be822e4",
+      "name": "Create Conversation1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/conversations/{{ $json.conversation_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $('Webhook').item.json.body.data.body.replace(/\"/g, '\\\\\"')             \n    .replace(/[¡¿]/g, '')        \n    .replace(/\\*+/g, '*') }}"
+            },
+            {
+              "name": "message_type",
+              "value": "outgoing"
+            },
+            {
+              "name": "private",
+              "value": "false"
+            },
+            {
+              "name": "source_id",
+              "value": "whatsapp-web"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1376,
+        1104
+      ],
+      "id": "f5f90927-607c-4552-b926-50c18fc3a3de",
+      "name": "Send Text Message1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/contacts/{{ $json.payload[0].id }}/conversations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        1296
+      ],
+      "id": "edb4aef6-74bf-4434-bf44-e5583feea1d6",
+      "name": "Get Conversation ID1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.data.type }}",
+                    "rightValue": "chat",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "b7029ee4-6384-46e0-82fd-5b7d901d73e8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3a0b39c7-2222-4c09-b082-2c1db5519432",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "File"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1072,
+        1232
+      ],
+      "id": "454a4d87-ae6d-465f-bd46-4968343b395c",
+      "name": "Message Type1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "68452062-53ba-4b19-b89f-916451a990d8",
+              "name": "inbox_id",
+              "value": "9",
+              "type": "string"
+            },
+            {
+              "id": "377c8030-1efb-495b-ab95-251bef64cbe0",
+              "name": "name",
+              "value": "={{ $('Webhook').item.json.body.data.to.replace('@c.us', '') }}",
+              "type": "string"
+            },
+            {
+              "id": "ba4ecc41-ba56-4757-adff-2b22ec8dd143",
+              "name": "phone_number",
+              "value": "={{ $('Webhook').item.json.body.data.to.replace('@c.us', '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -352,
+        1200
+      ],
+      "id": "0ddd457c-ad77-4c88-a3c8-2eee0781435e",
+      "name": "Prev Data for Creating a Conversation1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d4afd8a-fc9b-4a39-8c8f-be4260a9a9de",
+              "name": "conversation_id",
+              "value": "={{ $json.payload[0].id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        1296
+      ],
+      "id": "e4af2854-93a9-4723-85e9-6dc453013716",
+      "name": "conversation id1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "db30edb3-d26f-4261-a70d-7c474ccc3484",
+              "name": "conversation_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        1024
+      ],
+      "id": "e70f5d6c-0bf8-48bc-a51b-e2c7fb3e8ca7",
+      "name": "conversation id "
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Webhook').item.json.body.data.media }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1376,
+        1280
+      ],
+      "id": "5e3fb447-81cb-4433-b474-22618c9a8930",
+      "name": "Download File2",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/conversations/{{$('Message Type1').item.json.conversation_id}}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message_type",
+              "value": "outgoing"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "attachments[]",
+              "inputDataFieldName": "=data"
+            },
+            {
+              "name": "source_id",
+              "value": "whatsapp-web"
+            },
+            {
+              "name": "content",
+              "value": "={{ $('Webhook').item.json.body.data.body }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1552,
+        1280
+      ],
+      "id": "7dfde31d-720d-41cc-ab2a-e145513b092d",
+      "name": "Send file Message1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3aec33ee-fb48-4f70-8196-779fe0b8d68d",
+              "leftValue": "={{ $('Webhook').item.json.body.data.fromMe }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -944,
+        784
+      ],
+      "id": "1cd5dfae-a7c1-453f-be15-5f0e59a1a2a4",
+      "name": "is not from me?"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/contacts/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.phone_number }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -160,
+        432
+      ],
+      "id": "1645012f-53cc-4bfd-a87f-1210140339b4",
+      "name": "Get Contact"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bd0a00cd-dcad-436b-93bd-8e635c467e0a",
+              "leftValue": "={{ $json.meta.count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        432
+      ],
+      "id": "422c322c-0a81-4afe-9ac4-1fc687537bb3",
+      "name": "Contact not exist?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/contacts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $('Prev Data for Creating a Conversation').item.json.name }}"
+            },
+            {
+              "name": "identifier",
+              "value": "={{ $('Prev Data for Creating a Conversation').item.json.phone_number }}"
+            },
+            {
+              "name": "inbox_id",
+              "value": "={{ $('Prev Data for Creating a Conversation').item.json.inbox_id }}"
+            },
+            {
+              "name": "phone_number",
+              "value": "=+{{ $('Prev Data for Creating a Conversation').item.json.phone_number }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        304,
+        256
+      ],
+      "id": "85499477-e7ce-4c94-8c5a-bfbfa98eac48",
+      "name": "Create Contact"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/conversations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \n  \"inbox_id\": {{ $('Prev Data for Creating a Conversation').item.json.inbox_id }},\n  \"contact_id\": {{$('Create Contact').first().json.payload.contact.id}},\n  \"status\": \"open\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        256
+      ],
+      "id": "5acf4197-3889-48c5-8370-ef95bb50779e",
+      "name": "Create Conversation"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/conversations/{{ $json.conversation_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $('Webhook').item.json.body.data.body.replace(/\"/g, '\\\\\"')             \n    .replace(/[¡¿]/g, '')        \n    .replace(/\\*+/g, '*') }}"
+            },
+            {
+              "name": "message_type",
+              "value": "incoming"
+            },
+            {
+              "name": "private",
+              "value": "false"
+            },
+            {
+              "name": "source_id",
+              "value": "whatsapp-web"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
+        336
+      ],
+      "id": "fb08418f-9f38-4b99-b587-f629dc9c3883",
+      "name": "Send Text Message"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/contacts/{{ $json.payload[0].id }}/conversations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        304,
+        528
+      ],
+      "id": "86b9121d-ebff-49a8-bfc5-7e175c0280f8",
+      "name": "Get Conversation ID"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.data.type }}",
+                    "rightValue": "chat",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "b7029ee4-6384-46e0-82fd-5b7d901d73e8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3a0b39c7-2222-4c09-b082-2c1db5519432",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "File"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1056,
+        464
+      ],
+      "id": "c946154b-049e-4157-bd90-21e89f9f7d43",
+      "name": "Message Type"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "68452062-53ba-4b19-b89f-916451a990d8",
+              "name": "inbox_id",
+              "value": "9",
+              "type": "string"
+            },
+            {
+              "id": "377c8030-1efb-495b-ab95-251bef64cbe0",
+              "name": "name",
+              "value": "={{ $('Webhook').item.json.body.data.pushname }}",
+              "type": "string"
+            },
+            {
+              "id": "ba4ecc41-ba56-4757-adff-2b22ec8dd143",
+              "name": "phone_number",
+              "value": "={{ $('Webhook').item.json.body.data.from.replace('@c.us', '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -384,
+        432
+      ],
+      "id": "d717c281-bef6-4a66-9c45-bcd25bd12a77",
+      "name": "Prev Data for Creating a Conversation"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d4afd8a-fc9b-4a39-8c8f-be4260a9a9de",
+              "name": "conversation_id",
+              "value": "={{ $json.payload[0].id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        528
+      ],
+      "id": "7f8452c1-54f3-41cf-a9ad-868fbaafcdfb",
+      "name": "conversation id"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "db30edb3-d26f-4261-a70d-7c474ccc3484",
+              "name": "conversation_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        256
+      ],
+      "id": "0959d3aa-c7cb-455a-bff8-90ed49ee1823",
+      "name": "conversation id 1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Webhook').item.json.body.data.media }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
+        512
+      ],
+      "id": "4a788419-0d5c-4a7f-8c93-014675feca65",
+      "name": "Download File",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Account Details').item.json.chatwoot_host }}/api/v1/accounts/{{ $('Account Details').item.json.chatwoot_account_number }}/conversations/{{$('Message Type').item.json.conversation_id}}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Account Details').item.json.chatwoot_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message_type",
+              "value": "incoming"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "attachments[]",
+              "inputDataFieldName": "=data"
+            },
+            {
+              "name": "source_id",
+              "value": "whatsapp-web"
+            },
+            {
+              "name": "content",
+              "value": "={{ $('Webhook').item.json.body.data.body }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1536,
+        512
+      ],
+      "id": "5452bab8-93fa-4623-9bf9-96e435b9341f",
+      "name": "Send file Message"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "812a1ff9-0160-4639-bd64-916f3234b286",
+              "name": "chatwoot_host",
+              "value": "https://chatwootapp.frontierai.lat",
+              "type": "string"
+            },
+            {
+              "id": "9b964ca5-ad13-4471-a0c7-cce59aa4be8d",
+              "name": "chatwoot_account_number",
+              "value": "4",
+              "type": "string"
+            },
+            {
+              "id": "20e488f7-e83c-4421-8de9-b707b09233f5",
+              "name": "chatwoot_token",
+              "value": "kfZYhNSjaA1PPwEYz6MVo1Qm",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1568,
+        800
+      ],
+      "id": "83beb998-6e92-42ac-b89a-025be975c48c",
+      "name": "Account Details"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8nwebhookapp.frontierai.lat",
+            "user-agent": "axios/1.10.0",
+            "content-length": "569",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "10.0.0.2",
+            "x-forwarded-host": "n8nwebhookapp.frontierai.lat",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "40e001c7ad5f",
+            "x-real-ip": "10.0.0.2"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event_type": "message_received",
+            "instanceId": "140364",
+            "id": "",
+            "referenceId": "",
+            "hash": "c21f6826b5edef41545496ce6d70252b",
+            "data": {
+              "id": "false_51920666718@c.us_3EB0AEFFD55BCE8F88EAF2",
+              "sid": "3EB0AEFFD55BCE8F88EAF2",
+              "from": "51920666718@c.us",
+              "to": "51930139286@c.us",
+              "author": "",
+              "pushname": "mic",
+              "ack": "",
+              "type": "image",
+              "body": "image caption",
+              "media": "https://s3.eu-central-1.amazonaws.com/ultramsgmedia/2025/8/140364/097265ee66dfbffc568dcb8486b6d005",
+              "fromMe": false,
+              "self": false,
+              "isForwarded": false,
+              "isMentioned": false,
+              "quotedMsg": {},
+              "mentionedIds": [],
+              "time": 1755990848
+            }
+          },
+          "webhookUrl": "https://n8nwebhookapp.frontierai.lat/webhook/d91878e6-ef57-4930-b29d-1c8493f91c30",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Account Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is not a Group?": {
+      "main": [
+        [
+          {
+            "node": "is not from me?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Contact1": {
+      "main": [
+        [
+          {
+            "node": "Contact not exist?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact not exist?1": {
+      "main": [
+        [
+          {
+            "node": "Create Contact1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Conversation ID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Contact1": {
+      "main": [
+        [
+          {
+            "node": "Create Conversation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Conversation1": {
+      "main": [
+        [
+          {
+            "node": "conversation id ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conversation ID1": {
+      "main": [
+        [
+          {
+            "node": "conversation id1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Type1": {
+      "main": [
+        [
+          {
+            "node": "Send Text Message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prev Data for Creating a Conversation1": {
+      "main": [
+        [
+          {
+            "node": "Get Contact1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "conversation id1": {
+      "main": [
+        [
+          {
+            "node": "Message Type1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "conversation id ": {
+      "main": [
+        [
+          {
+            "node": "Message Type1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File2": {
+      "main": [
+        [
+          {
+            "node": "Send file Message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is not from me?": {
+      "main": [
+        [
+          {
+            "node": "Prev Data for Creating a Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prev Data for Creating a Conversation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Contact": {
+      "main": [
+        [
+          {
+            "node": "Contact not exist?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact not exist?": {
+      "main": [
+        [
+          {
+            "node": "Create Contact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Conversation ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Contact": {
+      "main": [
+        [
+          {
+            "node": "Create Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Conversation": {
+      "main": [
+        [
+          {
+            "node": "conversation id 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conversation ID": {
+      "main": [
+        [
+          {
+            "node": "conversation id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Type": {
+      "main": [
+        [
+          {
+            "node": "Send Text Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prev Data for Creating a Conversation": {
+      "main": [
+        [
+          {
+            "node": "Get Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "conversation id": {
+      "main": [
+        [
+          {
+            "node": "Message Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "conversation id 1": {
+      "main": [
+        [
+          {
+            "node": "Message Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Send file Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Account Details": {
+      "main": [
+        [
+          {
+            "node": "Is not a Group?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "19ceeee9-ba87-45ef-acd3-275592b4e914",
+  "meta": {
+    "instanceId": "e90ea13b829bbed83cbf4787719624af4fdeea0feb562098b80751c67ed7fba9"
+  },
+  "id": "9AkFx2I72rKHK1Qz",
+  "tags": [
+    {
+      "createdAt": "2025-08-24T15:48:51.178Z",
+      "updatedAt": "2025-08-24T15:48:51.178Z",
+      "id": "EaBnE1Yg0kogtMEx",
+      "name": "ultramsg"
+    }
+  ]
+}
